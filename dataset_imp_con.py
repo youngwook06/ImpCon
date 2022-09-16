@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from collate_fns_imp_con import collate_fn_ihc, collate_fn_w_aug_ihc_imp_con, collate_fn_dynahate, collate_fn_sbic, collate_fn_w_aug_sbic_imp_con, collate_fn_w_aug_ihc_imp_con_double, collate_fn_w_aug_sbic_imp_con_double
 
-
+# Credits https://github.com/varsha33/LCL_loss
 class ihc_dataset(Dataset):
 
     def __init__(self,data,training=True,w_aug=False):

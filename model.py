@@ -2,7 +2,7 @@ from torch import nn
 from torch.nn import functional as F
 from transformers import BertModel
 
-
+# Credits https://github.com/varsha33/LCL_loss
 class primary_encoder_v2_no_pooler_for_con(nn.Module):
 
     def __init__(self,hidden_size,emotion_size,encoder_type="bert-base-uncased"):

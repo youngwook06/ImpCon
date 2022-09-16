@@ -3,6 +3,7 @@ import itertools
 
 ################################################################
 
+# Credits https://github.com/varsha33/LCL_loss
 def collate_fn_ihc(data):
 
     def merge(sequences,N=None):

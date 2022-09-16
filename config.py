@@ -1,3 +1,5 @@
+# Credits https://github.com/varsha33/LCL_loss
+
 # dataset = ["ihc_pure"]
 dataset = ["ihc_pure_imp"]
 # dataset = ["sbic"]
