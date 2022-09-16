@@ -2,7 +2,7 @@
 This repository contains the code for the paper *Generalizable Implicit Hate Speech Detection using Contrastive Learning*.
 
 ## Data Preprocess
-You can preprocess the dataset using data_preprocess.py. To get ihc dataset for *ImpCon*:
+You can preprocess the dataset using data_preprocess.py. To get preprocessed ihc dataset for *ImpCon*:
 ```
 python data_preprocess.py -d ihc_pure_imp --aug
 ```
