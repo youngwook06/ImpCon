@@ -44,7 +44,7 @@ def train(epoch,train_loader,model_main,loss_function,optimizer,lr_scheduler,log
     print("train with separate double aug:", log.param.w_separate)
     print("loss with sup(using label info):", log.param.w_sup)
     print("len(train_loader):", len(train_loader))
-    print("train_batch_size:", train_batch_size)
+    print("train_batch_size including augmented posts/implications:", train_batch_size)
     if log.param.w_separate:
         assert log.param.w_double, "w_double should be set to True for w_separate=True option"
     

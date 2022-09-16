@@ -1,13 +1,11 @@
-# Credits https://github.com/varsha33/LCL_loss
-
 # dataset = ["ihc_pure"]
 dataset = ["ihc_pure_imp"]
 # dataset = ["sbic"]
 # dataset = ["sbic_imp"]
 # dataset = ["dynahate"]
 
-tuning_param  = ["lambda_loss", "main_learning_rate", "train_batch_size", "eval_batch_size", "nepoch", "temperature", "SEED", "dataset", "load_dir", "decay"] ## list of possible paramters to be tuned
-lambda_loss = [0.75]
+tuning_param  = ["lambda_loss", "main_learning_rate","train_batch_size","eval_batch_size","nepoch","temperature","SEED","dataset", "load_dir", "decay"] ## list of possible paramters to be tuned
+lambda_loss = [0.25]
 temperature = [0.3]
 train_batch_size = [8]
 eval_batch_size = [8]
@@ -16,7 +14,7 @@ main_learning_rate = [2e-5]
 
 hidden_size = 768
 nepoch = [6]
-run_name = "run0"
+run_name = "v6"
 loss_type = "w_aug_no_sup" # only for saving file name
 model_type = "bert-base-uncased"
 
@@ -32,7 +30,7 @@ debug = False
 # dataset = ["ihc_pure", "dynahate", "sbic"]
 # when load = True, save should be False since it is not implemented to do both at the same time. vice versa.
 cross_eval = False
-save = False
+save = True
 load = False
 
 # load_dir should be None when not loading
