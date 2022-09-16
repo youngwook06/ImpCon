@@ -20,7 +20,7 @@ from transformers import AdamW,get_linear_schedule_with_warmup, BertForSequenceC
 
 from tqdm import tqdm
 
-### Credits https://github.com/varsha33/LCL_loss
+# Credits https://github.com/varsha33/LCL_loss
 def train(epoch,train_loader,model_main,loss_function,optimizer,lr_scheduler,log):
 
     model_main.cuda()
