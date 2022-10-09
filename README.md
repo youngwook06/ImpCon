@@ -44,8 +44,8 @@ You can train a model by:
 ```
 python train.py
 ```
-The example train_config.py file is for training bert-base-uncased model with CE+*ImpCon*.
-You can also modify config.py to train a model with different training objectives or evaluate a model.
+The example train_config.py file is for training bert-base-uncased model on IHC with CE+*ImpCon*.
+You can also modify config.py to train a model with different training objectives or models.
 ### Train Configs
 - To train a model on ihc with CE+*AugCon*:
     ```
@@ -87,7 +87,7 @@ You can also modify config.py to train a model with different training objective
     w_sup = False
     ...
     ```
-- To train hatebert model, first download [hatebert](https://osf.io/tbd58/?view_onlycb79b3228d4248ddb875eb1803525ad8). You can download retrained_model/hate_bert.zip and unzip it in the root directory. Then, 
+- To train hatebert model, first download [hatebert](https://osf.io/tbd58/?view_onlycb79b3228d4248ddb875eb1803525ad8). You can download retrained_model/hate_bert.zip and unzip it in the root directory. Then, you can set the train_config.py as:
     ```
     ...
     model_type = "hatebert"
@@ -99,7 +99,7 @@ You can evaluate the saved model by:
 python eval.py
 ```
 ### Evaluation Configs
-- Before executing the code, change the load_dir in eval_config.py:
+- Before executing the code, input the load_dir in eval_config.py:
     ```
     ...
     load_dir = [DIRECTORY_TO_SAVED_MODEL]
