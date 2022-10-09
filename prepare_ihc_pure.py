@@ -62,9 +62,9 @@ if __name__ == '__main__':
 
     # split to train / valid / test set
     train, valid, test = np.split(pure_set.sample(frac=1, random_state=42), [int(.6*len(pure_set)), int(.8*len(pure_set))])
-    print(len(train)) # 11199
-    print(len(valid)) # 3733
-    print(len(test)) # 3734
+    # print(len(train)) # 11199
+    # print(len(valid)) # 3733
+    # print(len(test)) # 3734
 
     # save train / valid / test set
     os.makedirs("dataset/ihc_pure", exist_ok=True)

@@ -6,7 +6,4 @@ numpy==1.22.3
 pandas==1.4.2
 sklearn==0.0
 spacy==3.3.0
-torch==1.7.1+cu110
-torchaudio==0.7.2
-torchvision==0.8.2+cu110
 transformers==3.1.0
