@@ -9,11 +9,11 @@ import torch
 import torch.utils.data
 from torch import nn
 
-import config as train_config
-from dataset_imp_con import get_dataloader
+import train_config as train_config
+from dataset_impcon import get_dataloader
 from util import iter_product
 from sklearn.metrics import f1_score
-import loss_imp_con as loss
+import loss_impcon as loss
 from model import primary_encoder_v2_no_pooler_for_con
 
 from transformers import AdamW,get_linear_schedule_with_warmup, BertForSequenceClassification 
@@ -134,15 +134,10 @@ def train(epoch,train_loader,model_main,loss_function,optimizer,lr_scheduler,log
                 pred_1 = model_main(original_last_layer_hidden_states)
 
         else:
-            if not log.param.debug:
-                assert log.param.train_batch_size == label.shape[0]
-                only_original_labels = label
-                last_layer_hidden_states, supcon_feature_1 = model_main.get_cls_features_ptrnsp(text,attn) # #v2
-                pred_1 = model_main(last_layer_hidden_states)
-            else:
-                only_original_labels = label
-                pred_1 = model_main(text,attn, output_hidden_states=True,return_dict=True)
-                pred_1 = pred_1.logits 
+            assert log.param.train_batch_size == label.shape[0]
+            only_original_labels = label
+            last_layer_hidden_states, supcon_feature_1 = model_main.get_cls_features_ptrnsp(text,attn) # #v2
+            pred_1 = model_main(last_layer_hidden_states)
 
 
         if log.param.w_aug and log.param.w_sup:
@@ -237,12 +232,8 @@ def test(test_loader,model_main,log):
                 attn = attn.cuda()
                 label = label.cuda()
 
-            if not log.param.debug:
-                last_layer_hidden_states, supcon_feature_1 = model_main.get_cls_features_ptrnsp(text,attn) # #v2
-                pred_1 = model_main(last_layer_hidden_states)
-            else:
-                pred_1 = model_main(text,attn, output_hidden_states=True,return_dict=True)
-                pred_1 = pred_1.logits
+            last_layer_hidden_states, supcon_feature_1 = model_main.get_cls_features_ptrnsp(text,attn) # #v2
+            pred_1 = model_main(last_layer_hidden_states)
 
             num_corrects_1 = (torch.max(pred_1, 1)[1].view(label.size()).data == label.data).float().sum()
 
@@ -254,8 +245,7 @@ def test(test_loader,model_main,log):
 
             total_pred_1.extend(pred_list_1)
             total_true.extend(true_list)
-            if not log.param.debug:
-                total_feature.extend(supcon_feature_1.data.detach().cpu().tolist())
+            total_feature.extend(supcon_feature_1.data.detach().cpu().tolist())
             total_pred_prob_1.extend(pred_1.data.detach().cpu().tolist())
 
     f1_score_1 = f1_score(total_true,total_pred_1, average="macro")
@@ -292,10 +282,7 @@ def cl_train(log):
 
     model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
 
-    if not log.param.debug:
-        model_main = primary_encoder_v2_no_pooler_for_con(log.param.hidden_size,log.param.label_size,log.param.model_type)
-    else:
-        model_main = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2)
+    model_main = primary_encoder_v2_no_pooler_for_con(log.param.hidden_size,log.param.label_size,log.param.model_type)
 
 
     total_params = list(model_main.named_parameters())
@@ -341,7 +328,6 @@ def cl_train(log):
         is_best = val_f1_1["macro"] > best_criterion
         best_criterion = max(val_f1_1["macro"],best_criterion)
 
-        print("Model 1")
         print("Best model evaluated by macro f1")
         print(f'Valid Accuracy: {val_acc_1:.2f} Valid F1: {val_f1_1["macro"]:.2f}')
         print(f'Test Accuracy: {test_acc_1:.2f} Test F1: {test_f1_1["macro"]:.2f}')
@@ -369,66 +355,6 @@ def cl_train(log):
                 print(f"best model is saved at {os.path.join(save_home, 'model.pt')}")
 
 ##################################################################################################
-##################################################################################################
-##################################################################################################
-def cl_test(log):
-
-    np.random.seed(log.param.SEED)
-    random.seed(log.param.SEED)
-    torch.manual_seed(log.param.SEED)
-    torch.cuda.manual_seed(log.param.SEED)
-    torch.cuda.manual_seed_all(log.param.SEED)
-
-    torch.backends.cudnn.deterministic = True #
-    torch.backends.cudnn.benchmark = False #
-
-
-
-    print("#######################start run#######################")
-    print("log:", log)
-
-    # FOR CROSS DATASET EVALUTATION, we do not consider w_aug
-    if log.param.cross_eval and (("ihc" in log.param.dataset) or ("dynahate" in log.param.dataset) or ("sbic" in log.param.dataset)):
-        _,valid_data,test_data = get_dataloader(log.param.train_batch_size,log.param.eval_batch_size,log.param.dataset,w_aug=False,w_double=False,label_list=None) # train_batch_size, w_aug --- useless for test
-    else:
-        _,valid_data,test_data = get_dataloader(log.param.train_batch_size,log.param.eval_batch_size,log.param.dataset,w_aug=log.param.w_aug,w_double=log.param.w_double,label_list=None) # train_batch_size, w_aug --- useless for test
-
-    model_main = primary_encoder_v2_no_pooler_for_con(log.param.hidden_size,log.param.label_size,log.param.model_type) # v2
-    
-    #################################################################
-    # load model
-    model_main.load_state_dict(torch.load(os.path.join(log.param.load_dir, "model.pt")))
-    print(f"model is loaded from {log.param.load_dir}")
-    
-    model_main.eval()
-    if torch.cuda.is_available():
-        model_main.cuda()
-    ###################################################################
-    
-    val_acc_1,val_f1_1,val_save_pred = test(valid_data,model_main,log)
-    test_acc_1,test_f1_1,test_save_pred = test(test_data,model_main,log)
-
-    print("Model 1")
-    print(f'Valid Accuracy: {val_acc_1:.2f} Valid F1: {val_f1_1["macro"]:.2f}')
-    print(f'Test Accuracy: {test_acc_1:.2f} Test F1: {test_f1_1["macro"]:.2f}')
-
-    log.valid_f1_score_1 = val_f1_1
-    log.test_f1_score_1 = test_f1_1
-    log.valid_accuracy_1 = val_acc_1
-    log.test_accuracy_1 = test_acc_1
-
-    if log.param.dataset == "dynahate":
-        with open(os.path.join(log.param.load_dir, "dynahate_test_log.json"), 'w') as fp:
-            json.dump(dict(log), fp,indent=4)
-    elif "sbic" in log.param.dataset:
-        with open(os.path.join(log.param.load_dir, "sbic_test_log.json"), 'w') as fp:
-            json.dump(dict(log), fp,indent=4)
-    elif "ihc" in log.param.dataset:
-        with open(os.path.join(log.param.load_dir, "ihc_test_log.json"), 'w') as fp:
-            json.dump(dict(log), fp,indent=4)
-    else:
-        raise NotImplementedError
-
 
 if __name__ == '__main__':
 
@@ -444,50 +370,8 @@ if __name__ == '__main__':
 
         for num,val in enumerate(param_com):
             log.param[param_list[0][num]] = val
-        if log.param.run_name == "subset":
-            log.param.label_size = int(log.param.label_list.split("-")[0])
-        ## reseeding before every run while tuning
 
-        if log.param.dataset == "ed":
-            log.param.label_size = 32
-        elif log.param.dataset == "emoint":
-            log.param.label_size = 4
-        elif log.param.dataset == "goemotions":
-            log.param.label_size = 27
-        elif log.param.dataset == "isear":
-            log.param.label_size = 7
-        elif log.param.dataset == "sst-2":
-            log.param.label_size = 2
-        elif log.param.dataset == "sst-5":
-            log.param.label_size = 5
-        elif log.param.dataset == "ihc_pure":
-            log.param.label_size = 2
-        elif log.param.dataset == "ihc_pure_imp":
-            log.param.label_size = 2
-        elif log.param.dataset == "dynahate":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_imp":
-            log.param.label_size = 2
-        elif log.param.dataset == "ihc_pure_imp_only":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_imp_only":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_pure":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_pure_imp":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_pure_hard":
-            log.param.label_size = 2
-        elif log.param.dataset == "sbic_pure_hard_imp":
-            log.param.label_size = 2
+        log.param.label_size = 2
         
-        if not log.param.load:
-            cl_train(log)
-        else:
-            assert log.param.load_dir is not None, "to load a model, log.param.load_dir should be given!!"
-            assert not log.param.save, "when loading the model, save is not to be performed"
-            cl_test(log)
-
+        cl_train(log)
 
